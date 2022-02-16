@@ -14,6 +14,7 @@ type AccountSetterCallBack = {
 
 type BityFormCurrencyForm = {
     activeStep: number;
+    validate: boolean;
     outputAccount: string;
     inputAccount: string;
     outputAmount: string;
@@ -32,12 +33,12 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
 
     function createCurrencyInput(amount: string, setAmount: AccountSetterCallBack, account: string, setAccount: AccountSetterCallBack) {
         if (props.activeStep === 0) {
-            return <BityFormSelector account={account} conversionFactor={2} setAccount={setAccount}></BityFormSelector>
+            return <BityFormSelector account={account} validate={props.validate} conversionFactor={2} setAccount={setAccount}></BityFormSelector>
         } else if (props.activeStep === 1)
             return (
                 <React.Fragment>
                     <BityFormAmount amount={amount} conversionFactor={1} setAmount={setAmount} ></BityFormAmount>
-                    <BityFormSelector account={account} conversionFactor={1} setAccount={setAccount}></BityFormSelector>
+                    <BityFormSelector account={account} validate={props.validate} conversionFactor={1} setAccount={setAccount}></BityFormSelector>
                 </React.Fragment>
             )
     }

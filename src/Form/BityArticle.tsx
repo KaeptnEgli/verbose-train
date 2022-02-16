@@ -19,6 +19,7 @@ type AccountSetterCallBack = {
 
 type BityForm = {
     activeStep: number;
+    validate: boolean;
     open: boolean;
     outputAccount: string;
     inputAccount: string;
@@ -39,6 +40,7 @@ const BityForm: React.FC<BityForm> = (props) => {
                 {props.activeStep < 2 &&
                     <BityFormCurrencyForm 
                     activeStep={props.activeStep}
+                    validate={props.validate}
                     outputAccount={props.outputAccount}
                     inputAccount={props.inputAccount}
                     outputAmount={props.outputAmount}

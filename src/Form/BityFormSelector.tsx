@@ -46,6 +46,7 @@ type AccountSetterCallBack = {
 
 type BityFormSelector = {
   account: string;
+  validate: boolean;
   conversionFactor: number;
   setAccount: AccountSetterCallBack;
 }
@@ -58,6 +59,7 @@ const BityFormSelector: React.FC<BityFormSelector> = (props) => {
     <Box sx={{ minWidth: 220 }}>
       <FormControl fullWidth>
         <TextField
+          error={props.account.length > 0 || props.validate ? false : true}
           select
           //error
           id="outlined-select-currency"

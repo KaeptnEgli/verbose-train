@@ -4,6 +4,7 @@ import BityNavButtons from "./Nav/BityNavButtons";
 import { Wrapper } from './components/BityWrapper.styles';
 import BityArticle from "./Form/BityArticle";
 import BityImage from './components/BityImage';
+import BityAccountValidator from './Validation/BityAccountValidator';
 
 
 const BityApp: React.FC = () => {
@@ -14,12 +15,20 @@ const BityApp: React.FC = () => {
     const [inputAccount, setInputAccount] = React.useState('');
     const [outputAmount, setOutputAmount] = React.useState('');
     const [inputAmount, setInputAmount] = React.useState('');
-
-    console.log(setInputAccount);
+    const [validate, setValidate] = React.useState(true);
 
 
     const handleForwardClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
-        if (activeStep < 3) {
+        let inputAccountValidator = new BityAccountValidator(inputAccount)
+        let outputAccountValidator = new BityAccountValidator(outputAccount)
+
+        setValidate(true);
+
+        if (activeStep < 1 && !inputAccountValidator.validate() || !outputAccountValidator.validate()) {
+            setValidate(false);
+            return;
+        }
+        else if (activeStep < 3) {
             setActiveStep(activeStep + 1);
         } else if (activeStep === 3) {
             setActiveStep(0);
@@ -49,6 +58,7 @@ const BityApp: React.FC = () => {
             <Wrapper name="Article">
                 <BityArticle
                     activeStep={activeStep}
+                    validate={validate}
                     open={open}
                     outputAccount={outputAccount}
                     inputAccount={inputAccount}
@@ -58,7 +68,7 @@ const BityApp: React.FC = () => {
                     setInputAccountCallBack={setInputAccount}
                     setOutputAmountCallBack={setOutputAmount}
                     setInputAmountCallBack={setInputAmount}
-                    handleClickCloseCallbackType={() => handleClickClose}></BityForm>
+                    handleClickCloseCallbackType={() => handleClickClose}></BityArticle>
             </Wrapper>
             <Wrapper name="NavBottom">
                 <BityNavButtons

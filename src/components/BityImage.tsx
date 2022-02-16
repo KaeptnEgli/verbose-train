@@ -7,7 +7,7 @@ const BityImage: React.FC = () => {
         <a href='https://www.bity.com'>
             <Image
                 src={title}
-                width="165"
+                width="185"
                 height="75"
             ></Image>
         </a>
