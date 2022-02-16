@@ -26,6 +26,7 @@ const BityFormAmount: React.FC<BityFormAmount> = (props) => {
         <Box sx={{ minWidth: 200 }}>
             <FormControl fullWidth>
                 <TextField
+                    error={props.amount > 0 ? false : true}
                     id="outlined-basic"
                     label="Choose Amount"
                     variant="outlined"

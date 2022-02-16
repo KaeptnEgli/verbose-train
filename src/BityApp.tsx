@@ -1,9 +1,10 @@
 import * as React from "react";
-import BityNav from './Nav/BityNav';
-import BityBody from './BityBody';
-import { Button } from '@mui/material';
+import BityNavStepper from './Nav/BityNavStepper';
+import BityNavButtons from "./Nav/BityNavButtons";
 import { Wrapper } from './components/BityWrapper.styles';
-import BityForm from "./Form/BityForm";
+import BityArticle from "./Form/BityArticle";
+import BityImage from './components/BityImage';
+
 
 const BityApp: React.FC = () => {
 
@@ -20,7 +21,9 @@ const BityApp: React.FC = () => {
     const handleForwardClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
         if (activeStep < 3) {
             setActiveStep(activeStep + 1);
-        }
+        } else if (activeStep === 3) {
+            setActiveStep(0);
+        } 
     };
 
     const handleBackClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
@@ -39,11 +42,12 @@ const BityApp: React.FC = () => {
 
     return (
         <React.Fragment>
-            <Wrapper name="naviagtion">
-                <BityNav activeStep={activeStep}></BityNav>
+            <Wrapper name="NavTop">
+                <BityImage></BityImage>
+                <BityNavStepper activeStep={activeStep}></BityNavStepper>
             </Wrapper>
-            <Wrapper>
-                <BityForm
+            <Wrapper name="Article">
+                <BityArticle
                     activeStep={activeStep}
                     open={open}
                     outputAccount={outputAccount}
@@ -56,10 +60,13 @@ const BityApp: React.FC = () => {
                     setInputAmountCallBack={setInputAmount}
                     handleClickCloseCallbackType={() => handleClickClose}></BityForm>
             </Wrapper>
-            <Wrapper name="Body">
-                <Button variant="contained" onClick={handleBackClick}>back</Button>
-                <Button variant="outlined" onClick={handleForwardClick} type="submit">next</Button>
-                <Button variant="outlined" onClick={handleClickOpen}>Confirm Order</Button>
+            <Wrapper name="NavBottom">
+                <BityNavButtons
+                    activeStep={activeStep}
+                    handleBackClick={handleBackClick}
+                    handleForwardClick={handleForwardClick}
+                    handleClickOpen={handleClickOpen}
+                ></BityNavButtons>
             </Wrapper>
         </React.Fragment>
     );

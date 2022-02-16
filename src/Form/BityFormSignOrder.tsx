@@ -7,6 +7,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
+import title from  '../../assets/bity-media-kit/bity_logo_blue.png';
+
 //import connectivity from './assets/connectivity_350.png';
 
 type handleClickCloseCallbackType = {
@@ -45,7 +47,7 @@ const BityFormSignOrder: React.FC<BityFormSignOrder> = (props) => {
                     <DialogContentText id="alert-dialog-slide-description">
                         Please connect your Ledger-Live-Wallet to your device and confirm the transaction.
                         <div>
-                            {/* <img src={connectivity} alt="connect your ledger live wallet" /> */}
+                            <img src={title} alt="connect your ledger live wallet" />
                         </div>          
                     </DialogContentText>
                 </DialogContent>
