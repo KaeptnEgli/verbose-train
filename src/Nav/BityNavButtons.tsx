@@ -35,7 +35,6 @@ const BityNavButtons: React.FC<BityNavButtons> = (props) => {
                     onClick={props.handleForwardClick} type="submit">{
                         props.activeStep < 3 ? 'NEXT' : 'NEXT TRANSACTION '
                     }</Button>
-                {/* <Button variant="outlined" onClick={props.handleClickOpen}>Confirm Order</Button> */}
             </Box>
         </Wrapper>
     );

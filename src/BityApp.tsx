@@ -2,10 +2,8 @@ import * as React from "react";
 import BityNavStepper from './Nav/BityNavStepper';
 import BityNavButtons from "./Nav/BityNavButtons";
 import { Wrapper } from './components/BityWrapper.styles';
-import BityArticle from "./Form/BityArticle";
+import BityArticle from "./Article/BityArticle";
 import BityImage from './components/BityImage';
-import BityAccountValidator from './Validation/BityAccountValidator';
-
 
 const BityApp: React.FC = () => {
 
@@ -15,24 +13,35 @@ const BityApp: React.FC = () => {
     const [inputAccount, setInputAccount] = React.useState('');
     const [outputAmount, setOutputAmount] = React.useState('');
     const [inputAmount, setInputAmount] = React.useState('');
-    const [validate, setValidate] = React.useState(true);
+    const [isDefaultValidation, setIsDefaultValidation] = React.useState(true);
+    const [validate, setValidate] = React.useState([
+        { label: 'outputAccount', validate: false, defaultValidation: true },
+        { label: 'inputAccount', validate: false, defaultValidation: true },
+        { label: 'outputAmount', validate: false, defaultValidation: true },
+        { label: 'inputAmount', validate: false, defaultValidation: true },
+    ]);
 
+    const resetDefaulValidation = (): void => {
+        setValidate(validate.map((inputField) => ({
+            ...inputField, defaultValidation: true})));
+    }
 
     const handleForwardClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
-        let inputAccountValidator = new BityAccountValidator(inputAccount)
-        let outputAccountValidator = new BityAccountValidator(outputAccount)
+        let validateFirstPage = validate[0].validate && validate[1].validate;
+        let validateSecondPage = validateFirstPage && validate[2].validate && validate[3].validate;
 
-        setValidate(true);
-
-        if (activeStep < 1 && !inputAccountValidator.validate() || !outputAccountValidator.validate()) {
-            setValidate(false);
+        if (activeStep === 0 && !validateFirstPage) {
             return;
         }
-        else if (activeStep < 3) {
+        if (activeStep === 1 && !validateSecondPage) {
+            return;
+        } else if (activeStep < 3) {
+            console.log(validate);
+            resetDefaulValidation();
             setActiveStep(activeStep + 1);
         } else if (activeStep === 3) {
             setActiveStep(0);
-        } 
+        }
     };
 
     const handleBackClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
@@ -59,7 +68,6 @@ const BityApp: React.FC = () => {
                 <BityArticle
                     activeStep={activeStep}
                     validate={validate}
-                    open={open}
                     outputAccount={outputAccount}
                     inputAccount={inputAccount}
                     outputAmount={outputAmount}
@@ -68,7 +76,8 @@ const BityApp: React.FC = () => {
                     setInputAccountCallBack={setInputAccount}
                     setOutputAmountCallBack={setOutputAmount}
                     setInputAmountCallBack={setInputAmount}
-                    handleClickCloseCallbackType={() => handleClickClose}></BityArticle>
+                    setValidate={setValidate}
+                ></BityArticle>
             </Wrapper>
             <Wrapper name="NavBottom">
                 <BityNavButtons
@@ -78,7 +87,7 @@ const BityApp: React.FC = () => {
                     handleClickOpen={handleClickOpen}
                 ></BityNavButtons>
             </Wrapper>
-        </React.Fragment>
+        </React.Fragment >
     );
 };
 

@@ -1,17 +1,12 @@
-// PasswordInput.tsx
-//import withValidation from "./WithValidation";
-//import Input from "./Input";
-
 class BityAccountValidator {
-  account: string;
-  //valiadte: boolean
+  validation: boolean
 
-  constructor(account: string) {
-    this.account = account;
+  constructor() {
+    this.validation = false;
   }
 
-  public validate(): boolean {
-     return this.requiredValidator(this.account);
+  public validate(account: string): boolean {
+     return this.requiredValidator(account);
   }
 
   private requiredValidator (value?: string): boolean {
