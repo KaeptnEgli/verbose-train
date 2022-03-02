@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@bity/api": "^3.7.3",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@ledgerhq/live-app-sdk": "^0.6.0",

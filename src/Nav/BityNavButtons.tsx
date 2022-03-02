@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Button } from '@mui/material';
 import { Box } from '@mui/material';
-import { Wrapper } from '../components/BityWrapper.styles';
+import Container from '@mui/material/Container';
 
 type CallBackTypeMouseEvent = {
     (e: React.MouseEvent<HTMLButtonElement>): void
@@ -16,12 +16,13 @@ type BityNavButtons = {
 
 const BityNavButtons: React.FC<BityNavButtons> = (props) => {
     return (
-        <Wrapper>
+        <Container>
             <Box sx={{
                 display: 'flex',
                 flexDirection: 'row',
                 pt: 2,
                 justifyContent: 'space-between',
+                marginTop: '20px',
             }}>
                 <Button
                     sx={{ mr: 1 }}
@@ -36,7 +37,7 @@ const BityNavButtons: React.FC<BityNavButtons> = (props) => {
                         props.activeStep < 3 ? 'NEXT' : 'NEXT TRANSACTION '
                     }</Button>
             </Box>
-        </Wrapper>
+        </Container>
     );
 };
 

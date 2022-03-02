@@ -5,10 +5,15 @@ import BityFormOrderSummary from './BityFormOrderSummary';
 import BityFormSignOrder from './BityFormSignOrder';
 import BityFormStatusPage from './BityFormStatusPage';
 import BityFormCurrencyForm from './Form/BityFormCurrencyForm';
+import LedgerLiveApi, { Account } from "@ledgerhq/live-app-sdk";
 
 
 type handleClickCloseCallbackType = {
     (e: React.MouseEvent<HTMLButtonElement>): void
+}
+
+type AccountSetterCallBack = {
+    (account: Account): void
 }
 
 type StringSetterCallBack = {
@@ -40,7 +45,7 @@ type BityArticle = {
 const BityArticle: React.FC<BityArticle> = (props) => {
     return (
         <Container fixed>
-            <Box sx={{ marginTop: '100px', height: '80%' }}>
+            <Box sx={{ marginTop: '100px', height: '80%'}}>
                 {/* TODO use switch here abstract step 0 and 1 furhter more */}
                 {props.activeStep < 2 &&
                     <BityFormCurrencyForm 

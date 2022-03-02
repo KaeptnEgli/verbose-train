@@ -1,21 +1,34 @@
 import * as React from 'react';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
 import BityFormSelector from './BityFormSelector';
 import BityFormAmount from './BityFormAmount';
-import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MenuItem from '@mui/material/MenuItem';
-import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import BityAmountValidator from './../../Validation/BityAmountValidator';
+import BityAccountValidator from './../../Validation/BityAccountValidator';
+import LedgerLiveApi, { Account } from "@ledgerhq/live-app-sdk";
 
 const CURRENCIES = [
     { code: 'CHF', label: 'Switzerland' },
     { code: 'EUR', label: 'EU' },
 ]
 //TODO: refine type definitions
+
+type Currency = {
+    code: string;
+    tags: string[];
+}
+
+type CurrencySetterCallBack = {
+    (currency: Currency[]): void
+}
+
+type AccountSetterCallBack = {
+    (account: Account[]): void
+}
 
 type StringSetterCallBack = {
     (value: string): void
@@ -44,53 +57,73 @@ type BityFormCurrencyForm = {
 }
 
 const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
+    const childRef = React.useRef();
+    const [accounts, setAccounts] = React.useState<Account[]>([]);
+    const [currencies, setCurrencies] = React.useState<Currency[]>([]);
+
     function switchInputValues() {
-        if (props.activeStep === 0) {
-            let valueSwtichList = [props.outputAccount, props.inputAccount];
-            props.setOutputAccountCallBack(valueSwtichList[1]);
-            props.setInputAccountCallBack(valueSwtichList[0]);
-        } else if (props.activeStep === 1) {
+        //console.log(childRef.current);
+        if (props.activeStep === 1) {
             let valueSwtichList = [props.outputAmount, props.inputAmount];
             props.setOutputAmountCallBack(valueSwtichList[1]);
             props.setInputAmountCallBack(valueSwtichList[0]);
+            // TODO: useRef to trigger onChange event on FormSelector to make sure the validator is rerun again
         }
     }
 
     function createCurrencyInputFields(
         label: string,
         amount: string,
-        setAmount: StringSetterCallBack,
         account: string,
+        defaultCurrency: boolean,
+        accounts: Account[],
+        currencies: Currency[],
         setAccount: StringSetterCallBack,
-        setValidate: BooleanArraySetterCallBack) {
+        setAmount: StringSetterCallBack,
+        setValidate: BooleanArraySetterCallBack,
+        setAccounts: AccountSetterCallBack,
+        setCurrencies: CurrencySetterCallBack) {
         if (props.activeStep === 0) {
             return <BityFormSelector
-                label={label+"Account"}
+                label={label + "Account"}
                 account={account}
+                accounts={accounts}
+                currencies={currencies}
                 validate={props.validate}
+                defaultCurrency={defaultCurrency}
+                disabled={false}
                 conversionFactor={2}
                 setAccount={setAccount}
                 setValidate={setValidate}
-                ></BityFormSelector>
+                setAccounts={setAccounts}
+                setCurrencies={setCurrencies}
+            ></BityFormSelector>
         } else if (props.activeStep === 1)
             return (
                 <React.Fragment>
                     <BityFormAmount
-                        label={label+"Amount"}
+                        //ref={childRef}
+                        label={label + "Amount"}
                         amount={amount}
                         validate={props.validate}
                         conversionFactor={1}
                         setAmount={setAmount}
                         setValidate={setValidate}
-                        ></BityFormAmount>
+                    ></BityFormAmount>
                     <BityFormSelector
-                        label={label+"Account"}
+                        label={label + "Account"}
                         account={account}
+                        accounts={accounts}
+                        currencies={currencies}
                         validate={props.validate}
+                        defaultCurrency={defaultCurrency}
+                        disabled={true}
                         conversionFactor={1}
                         setAccount={setAccount}
                         setValidate={setValidate}
-                        ></BityFormSelector>
+                        setAccounts={setAccounts}
+                        setCurrencies={setCurrencies}
+                    ></BityFormSelector>
                 </React.Fragment>
             )
     }
@@ -105,10 +138,15 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
                 {createCurrencyInputFields(
                     'output',
                     props.outputAmount,
-                    props.setOutputAmountCallBack,
                     props.outputAccount,
+                    false,
+                    accounts,
+                    currencies,
                     props.setOutputAccountCallBack,
-                    props.setValidate)}
+                    props.setOutputAmountCallBack,
+                    props.setValidate,
+                    setAccounts,
+                    setCurrencies)}
                 <FormControl fullWidth>
                     <IconButton aria-label="switch" size="large" onClick={switchInputValues}>
                         <CompareArrowsIcon fontSize="inherit" />
@@ -117,10 +155,15 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
                 {createCurrencyInputFields(
                     'input',
                     props.inputAmount,
-                    props.setInputAmountCallBack,
                     props.inputAccount,
+                    true,
+                    accounts,
+                    currencies,
                     props.setInputAccountCallBack,
-                    props.setValidate)}
+                    props.setInputAmountCallBack,
+                    props.setValidate,
+                    setAccounts,
+                    setCurrencies)}
             </Stack>
 
             <FormControl size='small' sx={{ marginTop: '80px;' }}>

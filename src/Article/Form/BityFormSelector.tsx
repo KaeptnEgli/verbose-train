@@ -4,44 +4,27 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import BityAccountValidator from './../../Validation/BityAccountValidator';
 import { validate } from 'schema-utils';
+import LedgerLiveApi, { Account } from "@ledgerhq/live-app-sdk";
+import { WindowMessageTransport } from "@ledgerhq/live-app-sdk";
+import BityAPIDataService from "./../../API/BityAPIDataService";
 
 const MESSAGES = [
   'Total founds available in your account: 12 Eth = 1212.11 Other',
   'Field must not be empty.'
 ]
 
-const CURRENCIES = [
-  {
-    address: 'xX123abc34',
-    balance: '30',
-    blockHeight: '500',
-    currency: 'ETH',
-    id: '0',
-    lastSyncDate: 'someDate',
-    name: 'name-0',
-    spendableBalance: '30',
-  },
-  {
-    address: 'xX123abc34',
-    balance: '300',
-    blockHeight: '5000',
-    currency: 'BTC',
-    id: '1',
-    lastSyncDate: 'someDate',
-    name: 'name-1',
-    spendableBalance: '30',
-  },
-  {
-    address: 'xX123abc34',
-    balance: '400',
-    blockHeight: '5000',
-    currency: 'DOT',
-    id: '2',
-    lastSyncDate: 'someDate',
-    name: 'name-2',
-    spendableBalance: '400',
-  },
-];
+type Currency = {
+  code: string;
+  tags: string[];
+}
+
+type CurrencySetterCallBack = {
+  (currency: Currency[]): void
+}
+
+type AccountSetterCallBack = {
+  (account: Account[]): void
+}
 
 type StringSetterCallBack = {
   (account: string): void
@@ -58,13 +41,72 @@ type BooleanArraySetterCallBack = {
 type BityFormSelector = {
   label: string;
   account: string;
-  validate: { label: string; validate: boolean; defaultValidation: boolean}[];
+  accounts: Account[];
+  currencies: Currency[];
+  validate: { label: string; validate: boolean; defaultValidation: boolean }[];
+  defaultCurrency: boolean;
+  disabled: boolean;
   conversionFactor: number;
   setAccount: StringSetterCallBack;
+  setAccounts: AccountSetterCallBack;
   setValidate: BooleanArraySetterCallBack;
+  setCurrencies: CurrencySetterCallBack;
 }
 
+// TODO: props.label is a bit clunky try to change that
+
 const BityFormSelector: React.FC<BityFormSelector> = (props) => {
+  const [loading, setLoading] = React.useState(false);
+  const llapi = new LedgerLiveApi(new WindowMessageTransport());
+
+  React.useEffect(() => {
+    const loadAccounts = async () => {
+      llapi.connect();
+      setLoading(true);
+      const response = await llapi.listAccounts()
+      props.setAccounts(response);
+      setLoading(false);
+    }
+
+    const loadCurrencies = async () => {
+      let responseCurrencies = await BityAPIDataService.getCurrenciesCrypto();
+      props.setCurrencies(responseCurrencies);
+      console.log(responseCurrencies);
+    }
+    loadAccounts();
+    loadCurrencies();
+  }, []);
+
+  function renderMenuItem(): JSX.Element[] | undefined {
+    if (!loading) {
+      if (props.label === 'outputAccount') {
+        return props.accounts.map((account) =>
+          <MenuItem key={account.id} value={account.name}>
+            {account.name}
+          </MenuItem>)
+      } else {
+        return props.currencies.map((currency) =>
+          <MenuItem key={currency.code} value={currency.code}>
+            {currency.code}
+          </MenuItem>
+        )
+      }
+    }
+    return;
+  }
+
+  function getHelperText(): string {
+    if (!findValidation() && !findDefaultValidation()!) {
+      return 'Field must not be empty.';
+    } else if (props.label === 'outputAccount' && props.account) {
+      let account = props.accounts.find((account: Account) =>
+        account.name === props.account
+      );
+      return `Total founds available in your account: ${account!.spendableBalance} ${account!.currency} = 1212.11 Other`
+    }
+    return '';
+  }
+
   function findDefaultValidation(): boolean {
     return props.validate.find((inputField) =>
       inputField.label === props.label)!.defaultValidation;
@@ -95,19 +137,16 @@ const BityFormSelector: React.FC<BityFormSelector> = (props) => {
   return (
     <FormControl fullWidth>
       <TextField
+        disabled={props.disabled}
         error={!findValidation() && !findDefaultValidation()}
         select
-        id="outlined-select-crypto"
+        id={props.label}
         label="Choose Account"
         value={props.account}
         onChange={handleChange}
-        helperText={props.validate ? MESSAGES[0] : MESSAGES[1]}
+        helperText={getHelperText()}
       >
-        {CURRENCIES.map((option) => (
-          <MenuItem key={option.id} value={option.currency}>
-            {option.currency}
-          </MenuItem>
-        ))}
+        {renderMenuItem()}
       </TextField>
     </FormControl>
   );

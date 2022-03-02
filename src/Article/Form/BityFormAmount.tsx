@@ -30,6 +30,7 @@ type BityFormAmount = {
 }
 
 const BityFormAmount: React.FC<BityFormAmount> = (props) => {
+    
     function findDefaultValidation(): boolean {
         return props.validate.find((inputField) =>
           inputField.label === props.label)!.defaultValidation;
