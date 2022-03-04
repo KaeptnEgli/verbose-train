@@ -11,23 +11,31 @@ import BityAmountValidator from './../../Validation/BityAmountValidator';
 import BityAccountValidator from './../../Validation/BityAccountValidator';
 import LedgerLiveApi, { Account } from "@ledgerhq/live-app-sdk";
 
-const CURRENCIES = [
-    { code: 'CHF', label: 'Switzerland' },
-    { code: 'EUR', label: 'EU' },
+const CONVERSION_CURRENCIES = [
+    { code: 'CHF', tags: 'Switzerland' },
+    { code: 'EUR', tags: 'EU' },
 ]
 //TODO: refine type definitions
 
 type Currency = {
     code: string;
-    tags: string[];
+    tags: string | string[];
 }
 
 type CurrencySetterCallBack = {
+    (currency: Currency): void
+}
+
+type CurrenciesSetterCallBack = {
     (currency: Currency[]): void
 }
 
-type AccountSetterCallBack = {
+type AccountsSetterCallBack = {
     (account: Account[]): void
+}
+
+type AccountSetterCallBack = {
+    (account: Account): void
 }
 
 type StringSetterCallBack = {
@@ -60,6 +68,14 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
     const childRef = React.useRef();
     const [accounts, setAccounts] = React.useState<Account[]>([]);
     const [currencies, setCurrencies] = React.useState<Currency[]>([]);
+    const [conversionCurrency, setConversionCurrency] = React.useState<Currency>(CONVERSION_CURRENCIES[0]);
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
+        setConversionCurrency(
+            CONVERSION_CURRENCIES
+            .find((currency: Currency) =>
+                currency.code === e.target.value)!);
+    }
 
     function switchInputValues() {
         //console.log(childRef.current);
@@ -78,11 +94,13 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
         defaultCurrency: boolean,
         accounts: Account[],
         currencies: Currency[],
+        conversionCurrency: Currency,
         setAccount: StringSetterCallBack,
         setAmount: StringSetterCallBack,
         setValidate: BooleanArraySetterCallBack,
-        setAccounts: AccountSetterCallBack,
-        setCurrencies: CurrencySetterCallBack) {
+        setAccounts: AccountsSetterCallBack,
+        setCurrencies: CurrenciesSetterCallBack,
+        setConversionCurrency: CurrencySetterCallBack) {
         if (props.activeStep === 0) {
             return <BityFormSelector
                 label={label + "Account"}
@@ -92,11 +110,12 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
                 validate={props.validate}
                 defaultCurrency={defaultCurrency}
                 disabled={false}
-                conversionFactor={2}
+                conversionCurrency={conversionCurrency}
                 setAccount={setAccount}
                 setValidate={setValidate}
                 setAccounts={setAccounts}
                 setCurrencies={setCurrencies}
+                setConversionCurrency={setConversionCurrency}
             ></BityFormSelector>
         } else if (props.activeStep === 1)
             return (
@@ -118,11 +137,12 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
                         validate={props.validate}
                         defaultCurrency={defaultCurrency}
                         disabled={true}
-                        conversionFactor={1}
+                        conversionCurrency={conversionCurrency}
                         setAccount={setAccount}
                         setValidate={setValidate}
                         setAccounts={setAccounts}
                         setCurrencies={setCurrencies}
+                        setConversionCurrency={setConversionCurrency}
                     ></BityFormSelector>
                 </React.Fragment>
             )
@@ -142,11 +162,13 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
                     false,
                     accounts,
                     currencies,
+                    conversionCurrency,
                     props.setOutputAccountCallBack,
                     props.setOutputAmountCallBack,
                     props.setValidate,
                     setAccounts,
-                    setCurrencies)}
+                    setCurrencies,
+                    setConversionCurrency)}
                 <FormControl fullWidth>
                     <IconButton aria-label="switch" size="large" onClick={switchInputValues}>
                         <CompareArrowsIcon fontSize="inherit" />
@@ -159,24 +181,25 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
                     true,
                     accounts,
                     currencies,
+                    conversionCurrency,
                     props.setInputAccountCallBack,
                     props.setInputAmountCallBack,
                     props.setValidate,
                     setAccounts,
-                    setCurrencies)}
+                    setCurrencies,
+                    setConversionCurrency)}
             </Stack>
 
             <FormControl size='small' sx={{ marginTop: '80px;' }}>
                 <TextField
                     select
-                    //error
                     id="outlined-select-currency"
                     label="Choose Fiat Currency"
-                    //value={currency}
-                    //onChange={handleChange}
+                    value={conversionCurrency.code}
+                    onChange={handleChange}
                     helperText="Choose a fiat Currency for conversion"
                 >
-                    {CURRENCIES.map((option) => (
+                    {CONVERSION_CURRENCIES.map((option) => (
                         <MenuItem key={option.code} value={option.code}>
                             {option.code}
                         </MenuItem>

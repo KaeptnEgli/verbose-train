@@ -10,12 +10,14 @@ const orderRoute = 'orders/';
 const estimateOrderRoute = 'estimate';
 const currenciesRoute = 'currencies';
 
+// TODO: refine rest calls
+
 async function getJson(url: string) {
     return fetch(url)
         .then((response) => response.json());
 }
 
-async function postJson(url: string, json: string) {
+async function postJson(url: string, json: any) {
     const response = await fetch(url, {
         method: 'post',
         headers: {
@@ -48,9 +50,31 @@ async function getCurrenciesCrypto() {
         );
 }
 
-// async function getCurrenciesFiat() {
-//     retirm
-// }
+async function getCurrenciesFiat() {
+    return (await getJson(bityRESTServerURL + currenciesRoute))
+        .currencies
+        .filter(
+            (currency: Currency) =>
+                currency.tags.includes('fiat')
+        );
+}
+
+async function postEstimateOrder(inputAmount: string, inputCurrency: string, outputCurrency: string) {
+    let payload = {
+        input: {
+            amount: inputAmount,
+            currency: inputCurrency,
+        },
+        output: {
+            currency: outputCurrency,
+        }
+    };
+    return(await postJson(bityRESTServerURL + orderRoute + estimateOrderRoute, payload));
+}
+
+async function pushEstimateOrder() {
+
+}
 
 // async function evaluateGame(playerName: any, playerHand: any, gameMode = '') {
 //     return getJson(gameRESTServerURL + gameRoute + playerName + playerHand + gameMode);
@@ -65,7 +89,8 @@ async function getCurrenciesCrypto() {
 // }
 
 export default {
-    getCurrenciesCrypto
+    getCurrenciesCrypto,
+    postEstimateOrder,
 };
 function currency(currency: any, arg1: { tags: any; }) {
     throw new Error("Function not implemented.");

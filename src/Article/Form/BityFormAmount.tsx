@@ -50,7 +50,7 @@ const BityFormAmount: React.FC<BityFormAmount> = (props) => {
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         let AmountValidator = new BityAmountValidator();
-        if (AmountValidator.validate(e.target.value as string)) {
+        if (AmountValidator.validateField(e.target.value as string)) {
             setValidation(true);
         } else {
             setValidation(false);

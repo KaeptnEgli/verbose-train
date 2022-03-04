@@ -5,7 +5,7 @@ class BityAmountValidator {
     this.validation = false;
   }
 
-  public validate(amount: string | number): boolean {
+  public validateField(amount: string | number): boolean {
     this.validation = this.requiredValidator(amount);
     this.validation = this.nonZeroOrNegativeValidator(amount)
     return this.validation;

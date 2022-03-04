@@ -3,10 +3,11 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import BityAccountValidator from './../../Validation/BityAccountValidator';
-import { validate } from 'schema-utils';
+import { BigNumber } from "bignumber.js";
 import LedgerLiveApi, { Account } from "@ledgerhq/live-app-sdk";
 import { WindowMessageTransport } from "@ledgerhq/live-app-sdk";
 import BityAPIDataService from "./../../API/BityAPIDataService";
+import CryptoCurrencyFormatConverter from '../../Converter/CryptoCurrencyFormatConverter';
 
 const MESSAGES = [
   'Total founds available in your account: 12 Eth = 1212.11 Other',
@@ -15,11 +16,19 @@ const MESSAGES = [
 
 type Currency = {
   code: string;
-  tags: string[];
+  tags: string | string[];
 }
 
 type CurrencySetterCallBack = {
+  (currency: Currency): void
+}
+
+type CurrenciesSetterCallBack = {
   (currency: Currency[]): void
+}
+
+type AccountsSetterCallBack = {
+  (account: Account[]): void
 }
 
 type AccountSetterCallBack = {
@@ -43,20 +52,24 @@ type BityFormSelector = {
   account: string;
   accounts: Account[];
   currencies: Currency[];
+  conversionCurrency: Currency;
   validate: { label: string; validate: boolean; defaultValidation: boolean }[];
   defaultCurrency: boolean;
   disabled: boolean;
-  conversionFactor: number;
   setAccount: StringSetterCallBack;
-  setAccounts: AccountSetterCallBack;
+  setAccounts: AccountsSetterCallBack;
   setValidate: BooleanArraySetterCallBack;
-  setCurrencies: CurrencySetterCallBack;
+  setCurrencies: CurrenciesSetterCallBack;
+  setConversionCurrency: CurrencySetterCallBack;
 }
 
 // TODO: props.label is a bit clunky try to change that
 
 const BityFormSelector: React.FC<BityFormSelector> = (props) => {
   const [loading, setLoading] = React.useState(false);
+  const [conversionAmount, setConversionAmount] = React.useState(0);
+  const [minimumAmount, setMinimumAmount] = React.useState(new BigNumber(0));
+  const [hasSufficientFunds, setHasSufficientFunds] = React.useState(true);
   const llapi = new LedgerLiveApi(new WindowMessageTransport());
 
   React.useEffect(() => {
@@ -69,14 +82,30 @@ const BityFormSelector: React.FC<BityFormSelector> = (props) => {
     }
 
     const loadCurrencies = async () => {
-      let responseCurrencies = await BityAPIDataService.getCurrenciesCrypto();
+      const responseCurrencies = await BityAPIDataService.getCurrenciesCrypto();
       props.setCurrencies(responseCurrencies);
-      console.log(responseCurrencies);
     }
+
+    const loadConversionAmount = async () => {
+      const converter = new CryptoCurrencyFormatConverter();
+      const account = getActiveAccount();
+      if (account && props.label === 'outputAccount') {
+        console.log('here');
+        let result = await BityAPIDataService.postEstimateOrder(
+          `${String(converter.convertNumberFormat(account!.currency, account!.spendableBalance))}`,
+          converter.convertNametoSymbol(account!.currency),
+          props.conversionCurrency.code);
+        setConversionAmount(result.output.amount);
+        setMinimumAmount(result.input.minimum_amount);
+      }
+    }
+
     loadAccounts();
     loadCurrencies();
-  }, []);
+    loadConversionAmount();
+  }, [props.account, props.conversionCurrency]); // runs on first render en every time props.account is changed.
 
+  //TODO: use filter to only show available accounts.
   function renderMenuItem(): JSX.Element[] | undefined {
     if (!loading) {
       if (props.label === 'outputAccount') {
@@ -95,14 +124,28 @@ const BityFormSelector: React.FC<BityFormSelector> = (props) => {
     return;
   }
 
+  // TODO: use Account type from ledger sdk or a wrapper type BityAccount / BityCurrency so not translation is needed. Translate on render
+  function getActiveAccount(activeAccountName: string = props.account): Account {
+    return (props.accounts.find((account: Account) =>
+      account.name === activeAccountName)!
+    );
+  }
+
+  // TODO: performance issues to many rerenders here
   function getHelperText(): string {
-    if (!findValidation() && !findDefaultValidation()!) {
+    const converter = new CryptoCurrencyFormatConverter();
+    if (props.account && props.label === 'outputAccount') {
+      console.log('there');
+      const account = getActiveAccount();
+      const fundsAvailable = converter.convertNumberFormat(account!.currency, account!.spendableBalance);
+      const currencySymbol = converter.convertNametoSymbol(account!.currency);
+      if (!findValidation() && !findDefaultValidation()) {
+        return `Insufficient funds of account ${account!.currency}: ${fundsAvailable}. Minimum amount needed for ${currencySymbol} is ${minimumAmount}`;
+      } else if (props.label === 'outputAccount') {
+        return `Total funds available in your account: ${fundsAvailable} ${currencySymbol} = ${conversionAmount} ${props.conversionCurrency.code}`;
+      }
+    } else if (!findValidation() && !findDefaultValidation()) {
       return 'Field must not be empty.';
-    } else if (props.label === 'outputAccount' && props.account) {
-      let account = props.accounts.find((account: Account) =>
-        account.name === props.account
-      );
-      return `Total founds available in your account: ${account!.spendableBalance} ${account!.currency} = 1212.11 Other`
     }
     return '';
   }
@@ -125,13 +168,19 @@ const BityFormSelector: React.FC<BityFormSelector> = (props) => {
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
-    let AccountValidator = new BityAccountValidator();
-    if (AccountValidator.validate(e.target.value as string)) {
+    const AccountValidator = new BityAccountValidator();
+    const activeAccount = e.target.value as string;
+    if (props.label == 'outputAccount' &&
+      AccountValidator.validateField(e.target.value as string) &&
+      AccountValidator.validateAccount(getActiveAccount(activeAccount), minimumAmount)) {
+      setValidation(true);
+    } else if (props.label == 'inputAccount' &&
+      AccountValidator.validateField(e.target.value as string)) {
       setValidation(true);
     } else {
       setValidation(false);
     }
-    props.setAccount(e.target.value as string);
+    props.setAccount(activeAccount);
   }
 
   return (
