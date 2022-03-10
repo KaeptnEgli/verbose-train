@@ -2,6 +2,7 @@ import * as React from 'react';
 import FormControl, { useFormControl } from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import BityAmountValidator from './../../Validation/BityAmountValidator';
+import { AppDataContext, AppDataContextType } from '../../Context/AppDataContext';
 
 const MESSAGES = [
     'Choose the amount you want to sell or buy.',
@@ -9,40 +10,28 @@ const MESSAGES = [
 ]
 
 type StringSetterCallBack = {
-    (amount: string): void
-}
-
-type BooleanSetterCallBack = {
-    (bool: boolean): void
-}
-
-type BooleanArraySetterCallBack = {
-    (inputField: { label: string; validate: boolean; defaultValidation: boolean }[]): void
+    (account: string): void
 }
 
 type BityFormAmount = {
     label: string;
-    amount: string | number;
-    validate: { label: string; validate: boolean; defaultValidation: boolean}[];
-    conversionFactor: number;
-    setAmount: StringSetterCallBack;
-    setValidate: BooleanArraySetterCallBack;
+    appData: AppDataContextType;
 }
 
 const BityFormAmount: React.FC<BityFormAmount> = (props) => {
     
     function findDefaultValidation(): boolean {
-        return props.validate.find((inputField) =>
+        return props.appData.validate.find((inputField) =>
           inputField.label === props.label)!.defaultValidation;
       }
     
       function findValidation(): boolean {
-        return props.validate.find((inputField) =>
+        return props.appData.validate.find((inputField) =>
           inputField.label === props.label)!.validate;
       }
     
       function setValidation(validation: boolean): void {
-        props.setValidate(props.validate.map((inputField: any) =>
+        props.appData.setValidate(props.appData.validate.map((inputField: any) =>
           inputField.label === props.label
             ? { ...inputField, validate: validation, defaultValidation: false }
             : { ...inputField }))
@@ -55,7 +44,11 @@ const BityFormAmount: React.FC<BityFormAmount> = (props) => {
         } else {
             setValidation(false);
         }
-        props.setAmount(e.target.value as string);
+        if (props.label == 'outputAmount') {
+            props.appData.setOutputAmount(e.target.value as string);
+        } else if (props.label == 'inputAmount') {
+            props.appData.setInputAmount(e.target.value as string);
+        }
     }
     return (
         <FormControl fullWidth>
@@ -64,8 +57,8 @@ const BityFormAmount: React.FC<BityFormAmount> = (props) => {
                 id="outlined-basic"
                 label="Choose Amount"
                 variant="outlined"
-                helperText={props.validate ? MESSAGES[0] : MESSAGES[1]}
-                value={props.amount}
+                helperText={props.appData.validate ? MESSAGES[0] : MESSAGES[1]}
+                value={props.label == 'outputAmount' ? props.appData.outputAmount : props.appData.inputAmount }
                 onChange={handleChange} />
         </FormControl>
     );

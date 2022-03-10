@@ -6,7 +6,8 @@ import BityFormSignOrder from './BityFormSignOrder';
 import BityFormStatusPage from './BityFormStatusPage';
 import BityFormCurrencyForm from './Form/BityFormCurrencyForm';
 import LedgerLiveApi, { Account } from "@ledgerhq/live-app-sdk";
-
+import { ActiveStepContext } from '../Context/ActiveStepContext';
+import { AppDataContext } from '../Context/AppDataContext';
 
 type handleClickCloseCallbackType = {
     (e: React.MouseEvent<HTMLButtonElement>): void
@@ -29,7 +30,6 @@ type BooleanArraySetterCallBack = {
 }
 
 type BityArticle = {
-    activeStep: number;
     validate: { label: string; validate: boolean; defaultValidation: boolean; }[];
     outputAccount: string;
     inputAccount: string;
@@ -42,34 +42,40 @@ type BityArticle = {
     setValidate: BooleanArraySetterCallBack;
 }
 
-const BityArticle: React.FC<BityArticle> = (props) => {
+const BityArticle: React.FC = () => {
     return (
-        <Container fixed>
-            <Box sx={{ marginTop: '100px', height: '80%'}}>
-                {/* TODO use switch here abstract step 0 and 1 furhter more */}
-                {props.activeStep < 2 &&
-                    <BityFormCurrencyForm 
-                    activeStep={props.activeStep}
-                    validate={props.validate}
-                    outputAccount={props.outputAccount}
-                    inputAccount={props.inputAccount}
-                    outputAmount={props.outputAmount}
-                    inputAmount={props.inputAmount}
-                    setOutputAccountCallBack={props.setOutputAccountCallBack}
-                    setInputAccountCallBack={props.setInputAccountCallBack}
-                    setOutputAmountCallBack={props.setOutputAmountCallBack}
-                    setInputAmountCallBack={props.setInputAmountCallBack}
-                    setValidate={props.setValidate}
-                    ></BityFormCurrencyForm>
-                }
-                {props.activeStep === 2 &&
-                    <BityFormOrderSummary></BityFormOrderSummary>
-                }
-                {props.activeStep === 3 &&
-                    <BityFormStatusPage></BityFormStatusPage>
-                }
-            </Box>
-        </Container>
+        <>
+            <ActiveStepContext.Consumer>
+                {activeStepContext => (
+                    <Container fixed>
+                        <Box sx={{ marginTop: '100px', height: '80%' }}>
+                            {/* TODO use switch here abstract step 0 and 1 furhter more */}
+                            {activeStepContext.activeStep < 2 &&
+                                <>
+                                    <AppDataContext.Consumer>
+                                        {AppDataContext => (
+                                            <BityFormCurrencyForm appData={AppDataContext} />
+                                        )}
+                                    </AppDataContext.Consumer>
+                                </>
+                            }
+                            {activeStepContext.activeStep === 2 &&
+                                <>
+                                    <AppDataContext.Consumer>
+                                        {AppDataContext => (
+                                            <BityFormOrderSummary appData={AppDataContext} />
+                                        )}
+                                    </AppDataContext.Consumer>
+                                </>
+                            }
+                            {activeStepContext.activeStep === 3 &&
+                                <BityFormStatusPage />
+                            }
+                        </Box>
+                    </Container>
+                )}
+            </ActiveStepContext.Consumer>
+        </>
     );
 }
 

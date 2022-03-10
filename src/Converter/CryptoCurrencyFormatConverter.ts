@@ -7,6 +7,10 @@ class CryptoCurrencyFormatConverter {
         bitcoin: 'BTC',
     }
 
+    cryptoCurrencySymbolToNameActionMap = {
+        ETH: 'ethereum',
+        BTC: 'bitcoin',
+    }
 
     cryptoCurrencyNumberFormatActionMap = {
         ethereum: 18, //10^18
@@ -16,6 +20,10 @@ class CryptoCurrencyFormatConverter {
     //TODO: acoid any type for action map use cryptoCurrencyNameToSymbolActionMap - typescript handbook
     public convertNametoSymbol(this: any, cryptoCurrency: string): string {
         return this.cryptoCurrencyNameToSymbolActionMap[cryptoCurrency];
+    }
+
+    public convertSymboltoName(this: any, cryptoCurrency: string): string {
+        return this.cryptoCurrencySymbolToNameActionMap[cryptoCurrency];
     }
 
     //TODO: dito above

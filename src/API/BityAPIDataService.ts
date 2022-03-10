@@ -60,7 +60,7 @@ async function getCurrenciesFiat() {
 }
 
 async function postEstimateOrder(inputAmount: string, inputCurrency: string, outputCurrency: string) {
-    let payload = {
+    const payload = {
         input: {
             amount: inputAmount,
             currency: inputCurrency,
@@ -69,11 +69,24 @@ async function postEstimateOrder(inputAmount: string, inputCurrency: string, out
             currency: outputCurrency,
         }
     };
-    return(await postJson(bityRESTServerURL + orderRoute + estimateOrderRoute, payload));
+    return (await postJson(bityRESTServerURL + orderRoute + estimateOrderRoute, payload));
 }
 
-async function pushEstimateOrder() {
-
+async function postPlayeOrder(inputAmount: string, inputCurrency: string, outputCurrency: string, inputAccount: string, outputAccount: string) {
+    const payload = {
+        input: {
+            amount: inputAmount,
+            crypto_address: inputAccount,
+            currency: inputCurrency,
+            type: "crypto_address"
+        },
+        output: {
+            crypto_address: outputAccount,
+            currency: outputCurrency,
+            type: "crypto_address"
+        }
+    }
+    return (await postJson(bityRESTServerURL + orderRoute, payload));
 }
 
 // async function evaluateGame(playerName: any, playerHand: any, gameMode = '') {
@@ -92,7 +105,3 @@ export default {
     getCurrenciesCrypto,
     postEstimateOrder,
 };
-function currency(currency: any, arg1: { tags: any; }) {
-    throw new Error("Function not implemented.");
-}
-
