@@ -13,6 +13,7 @@ import { Currency } from './Types/Currency';
 
 // TODO validation on switch button with sideeffects
 // TODO: make simpler passing of states.
+// TODO: eslint is missing
 
 const CONVERSION_CURRENCIES = [
     { code: 'CHF', tags: 'Switzerland' },
@@ -43,8 +44,6 @@ const BityApp: React.FC = () => {
             ...inputField, defaultValidation: value
         })));
     }
-
-    // TODO: start here tomorrow
 
     const handleForwardClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
         let validateFirstPage = validate[0].validate && validate[1].validate;

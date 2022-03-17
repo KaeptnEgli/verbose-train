@@ -89,18 +89,6 @@ async function postPlayeOrder(inputAmount: string, inputCurrency: string, output
     return (await postJson(bityRESTServerURL + orderRoute, payload));
 }
 
-// async function evaluateGame(playerName: any, playerHand: any, gameMode = '') {
-//     return getJson(gameRESTServerURL + gameRoute + playerName + playerHand + gameMode);
-
-
-// async function createEntry(entry) {
-//     return postJson(rankingsRESTServerURL + rankingRoute, entry);
-// }
-
-// async function updateEntry(id, value) {
-//     return patchJson(rankingsRESTServerURL + rankingRoute + id, value);
-// }
-
 export default {
     getCurrenciesCrypto,
     postEstimateOrder,

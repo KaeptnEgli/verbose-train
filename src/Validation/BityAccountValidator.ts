@@ -27,10 +27,8 @@ class BityAccountValidator {
 
   private hasSufficientFunds(account: Account, minimumAmount: BigNumber) {
     const fundsAvailable = this.converter.convertNumberFormat(account!.currency, account!.spendableBalance);
-    console.log(fundsAvailable +" "+ minimumAmount);
     return fundsAvailable.isGreaterThan(minimumAmount);
   }
-
 }
 
 export default BityAccountValidator;

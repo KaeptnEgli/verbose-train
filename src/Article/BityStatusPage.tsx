@@ -5,7 +5,7 @@ import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { Button, TextField } from '@mui/material';
 
-const BityFormStatusPage: React.FC = () => {
+const BityStatusPage: React.FC = () => {
     return (
         <Container maxWidth="md">
             <Box sx={{
@@ -29,4 +29,4 @@ const BityFormStatusPage: React.FC = () => {
     );
 }
 
-export default BityFormStatusPage;
+export default BityStatusPage;

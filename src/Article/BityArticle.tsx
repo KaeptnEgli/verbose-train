@@ -1,46 +1,12 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import BityFormOrderSummary from './BityFormOrderSummary';
-import BityFormSignOrder from './BityFormSignOrder';
-import BityFormStatusPage from './BityFormStatusPage';
-import BityFormCurrencyForm from './Form/BityFormCurrencyForm';
+import BityOrderSummary from './BityOrderSummary';
+import BityStatusPage from './BityStatusPage';
+import BityForm from './Form/BityForm';
 import LedgerLiveApi, { Account } from "@ledgerhq/live-app-sdk";
 import { ActiveStepContext } from '../Context/ActiveStepContext';
 import { AppDataContext } from '../Context/AppDataContext';
-
-type handleClickCloseCallbackType = {
-    (e: React.MouseEvent<HTMLButtonElement>): void
-}
-
-type AccountSetterCallBack = {
-    (account: Account): void
-}
-
-type StringSetterCallBack = {
-    (account: string): void
-}
-
-type BooleanSetterCallBack = {
-    (bool: boolean): void
-}
-
-type BooleanArraySetterCallBack = {
-    (inputField: { label: string; validate: boolean; defaultValidation: boolean; }[]): void
-}
-
-type BityArticle = {
-    validate: { label: string; validate: boolean; defaultValidation: boolean; }[];
-    outputAccount: string;
-    inputAccount: string;
-    outputAmount: string;
-    inputAmount: string;
-    setOutputAccountCallBack: StringSetterCallBack;
-    setInputAccountCallBack: StringSetterCallBack;
-    setOutputAmountCallBack: StringSetterCallBack;
-    setInputAmountCallBack: StringSetterCallBack;
-    setValidate: BooleanArraySetterCallBack;
-}
 
 const BityArticle: React.FC = () => {
     return (
@@ -54,7 +20,7 @@ const BityArticle: React.FC = () => {
                                 <>
                                     <AppDataContext.Consumer>
                                         {AppDataContext => (
-                                            <BityFormCurrencyForm appData={AppDataContext} />
+                                            <BityForm appData={AppDataContext} />
                                         )}
                                     </AppDataContext.Consumer>
                                 </>
@@ -63,13 +29,13 @@ const BityArticle: React.FC = () => {
                                 <>
                                     <AppDataContext.Consumer>
                                         {AppDataContext => (
-                                            <BityFormOrderSummary appData={AppDataContext} />
+                                            <BityOrderSummary appData={AppDataContext} />
                                         )}
                                     </AppDataContext.Consumer>
                                 </>
                             }
                             {activeStepContext.activeStep === 3 &&
-                                <BityFormStatusPage />
+                                <BityStatusPage />
                             }
                         </Box>
                     </Container>

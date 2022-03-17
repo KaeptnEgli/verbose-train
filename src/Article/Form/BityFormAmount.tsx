@@ -5,13 +5,10 @@ import BityAmountValidator from './../../Validation/BityAmountValidator';
 import { AppDataContext, AppDataContextType } from '../../Context/AppDataContext';
 
 const MESSAGES = [
-    'Choose the amount you want to sell or buy.',
+    'Amount you send',
+    'Amount you recieve',
     'Incorrect amount, must not be empty and greather than 0'
 ]
-
-type StringSetterCallBack = {
-    (account: string): void
-}
 
 type BityFormAmount = {
     label: string;
@@ -19,6 +16,19 @@ type BityFormAmount = {
 }
 
 const BityFormAmount: React.FC<BityFormAmount> = (props) => {
+
+    function getHelperText(): string {
+        if (!findValidation() && !findDefaultValidation()) {
+            return MESSAGES[2];
+        } else {
+            if (props.label == 'outputAmount') {
+                return MESSAGES[0];
+
+            } else {
+                return MESSAGES[1];
+            }
+        }
+    }
     
     function findDefaultValidation(): boolean {
         return props.appData.validate.find((inputField) =>
@@ -57,7 +67,7 @@ const BityFormAmount: React.FC<BityFormAmount> = (props) => {
                 id="outlined-basic"
                 label="Choose Amount"
                 variant="outlined"
-                helperText={props.appData.validate ? MESSAGES[0] : MESSAGES[1]}
+                helperText={getHelperText()}
                 value={props.label == 'outputAmount' ? props.appData.outputAmount : props.appData.inputAmount }
                 onChange={handleChange} />
         </FormControl>

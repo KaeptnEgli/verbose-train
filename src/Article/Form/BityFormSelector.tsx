@@ -1,3 +1,6 @@
+
+    
+
 import * as React from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -10,15 +13,12 @@ import BityAPIDataService from "./../../API/BityAPIDataService";
 import CryptoCurrencyFormatConverter from '../../Converter/CryptoCurrencyFormatConverter';
 import { AppDataContext, AppDataContextType } from '../../Context/AppDataContext';
 import { Currency } from '../../Types/Currency';
+import debounce from '@mui/material/utils/debounce';
 
 const MESSAGES = [
   'Total founds available in your account: 12 Eth = 1212.11 Other',
   'Field must not be empty.'
 ]
-
-type StringSetterCallBack = {
-  (account: string): void
-}
 
 type BityFormSelector = {
   label: string;
@@ -40,41 +40,70 @@ const BityFormSelector: React.FC<BityFormSelector> = (props) => {
   //const [hasSufficientFunds, setHasSufficientFunds] = React.useState(true);
   const llapi = new LedgerLiveApi(new WindowMessageTransport());
 
+  const firstUpdate = React.useRef(true);
+  const prevAccount = React.useRef('');
+
   React.useEffect(() => {
-    setLoadingAccounts(true);
-    //setLoadingConversionAmount(true);
     const loadAccounts = async () => {
       llapi.connect();
       const response = await llapi.listAccounts()
       props.appData.setAccounts(response);
-      setLoadingAccounts(false);
     }
 
     const loadCurrencies = async () => {
       const responseCurrencies = await BityAPIDataService.getCurrenciesCrypto();
+      console.log(responseCurrencies);
       props.appData.setCurrencies(responseCurrencies);
     }
+    setLoadingAccounts(true);
+    loadAccounts();
+    loadCurrencies();
+    setLoadingAccounts(false);
+  }, [props.account]); // runs on first render en every time props.account is changed.
 
+  React.useEffect(() => {
     const loadConversionAmount = async () => {
       const converter = new CryptoCurrencyFormatConverter();
       const account = getActiveAccount();
       if (account && props.label === 'outputAccount') {
-        console.log(account!)
-        let result = await BityAPIDataService.postEstimateOrder(
+        const result = await BityAPIDataService.postEstimateOrder(
           `${String(converter.convertNumberFormat(account!.currency, account!.spendableBalance))}`,
           converter.convertNametoSymbol(account!.currency),
           props.appData.conversionCurrency.code);
+        
+        console.log(result);
+          
         setConversionAmount(result.output.amount);
         setMinimumAmount(result.input.minimum_amount);
-        //setLoadingConversionAmount(false);
       }
     }
-
-    loadAccounts();
-    loadCurrencies();
+    setLoadingConversionAmount(true);
     loadConversionAmount();
-
+    setLoadingConversionAmount(false);
   }, [props.account, props.appData.conversionCurrency]); // runs on first render en every time props.account is changed.
+
+  React.useEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
+    
+    const AccountValidator = new BityAccountValidator();
+    console.log(AccountValidator.validateField(props.appData.outputAccount));
+    if (props.label == 'outputAccount' &&
+      AccountValidator.validateField(props.appData.outputAccount) &&
+      AccountValidator.validateAccount(getActiveAccount(props.appData.outputAccount), minimumAmount)) {
+      setValidation(true);
+    } else if (props.label == 'inputAccount' &&
+      AccountValidator.validateField(props.appData.inputAccount)) {
+      setValidation(true);
+    } else {
+      console.log('false ' + props.label);
+      console.log(props.appData.validate)
+      setValidation(false);
+    }
+  }, [props.appData.outputAccount, props.appData.inputAccount])
+
 
   //TODO: use filter to only show available accounts.
   function renderMenuItem(): JSX.Element[] | undefined {
@@ -107,11 +136,9 @@ const BityFormSelector: React.FC<BityFormSelector> = (props) => {
     const converter = new CryptoCurrencyFormatConverter();
     if (props.account && props.label === 'outputAccount') {
       const account = getActiveAccount();
-      console.log("1"+account!+props.account+props.label);
       const fundsAvailable = converter.convertNumberFormat(account!.currency, account!.spendableBalance);
       const currencySymbol = converter.convertNametoSymbol(account!.currency);
       if (!findValidation() && !findDefaultValidation()) {
-        console.log("2"+account!);
         return `Insufficient funds of account ${account!.currency}: ${fundsAvailable}. Minimum amount needed for ${currencySymbol} is ${minimumAmount}`;
       } else if (props.label === 'outputAccount') {
         return `Total funds available in your account: ${fundsAvailable} ${currencySymbol} = ${conversionAmount} ${props.appData.conversionCurrency.code}`;
@@ -140,43 +167,33 @@ const BityFormSelector: React.FC<BityFormSelector> = (props) => {
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
-    const AccountValidator = new BityAccountValidator();
-    const activeAccount = e.target.value as string;  
-    //if (!loadingConversionAmount) {
-      if (props.label == 'outputAccount' &&
-        AccountValidator.validateField(e.target.value as string) &&
-        AccountValidator.validateAccount(getActiveAccount(activeAccount), minimumAmount)) {
-        setValidation(true);
-      } else if (props.label == 'inputAccount' &&
-        AccountValidator.validateField(e.target.value as string)) {
-        setValidation(true);
-      } else {
-        setValidation(false);
-      }
-    //}
+    console.log(conversionAmount + " " + minimumAmount);
+    const activeAccount = e.target.value as string;
     if (props.label == 'outputAccount') {
+      prevAccount.current = props.appData.outputAccount;
       props.appData.setOutputAccount(activeAccount);
     } else if (props.label == 'inputAccount') {
+      prevAccount.current = props.appData.inputAccount;
       props.appData.setInputAccount(activeAccount);
     }
   }
 
-    return (
-      <FormControl fullWidth>
-        <TextField
-          disabled={props.disabled}
-          error={!findValidation() && !findDefaultValidation()}
-          select
-          id={props.label}
-          label="Choose Account"
-          value={props.label == 'outputAccount' ? props.appData.outputAccount : props.appData.inputAccount}
-          onChange={handleChange}
-          helperText={getHelperText()}
-        >
-          {renderMenuItem()}
-        </TextField>
-      </FormControl>
-    );
+  return (
+    <FormControl fullWidth>
+      <TextField
+        disabled={props.disabled}
+        error={!findValidation() && !findDefaultValidation()}
+        select
+        id={props.label}
+        label="Choose Account"
+        value={props.label == 'outputAccount' ? props.appData.outputAccount : props.appData.inputAccount}
+        onChange={handleChange}
+        helperText={getHelperText()}
+      >
+        {renderMenuItem()}
+      </TextField>
+    </FormControl>
+  );
 }
 
 export default BityFormSelector;

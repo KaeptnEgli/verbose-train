@@ -7,8 +7,8 @@ import IconButton from '@mui/material/IconButton';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-import BityAmountValidator from './../../Validation/BityAmountValidator';
-import BityAccountValidator from './../../Validation/BityAccountValidator';
+import BityAmountValidator from '../../Validation/BityAmountValidator';
+import BityAccountValidator from '../../Validation/BityAccountValidator';
 import LedgerLiveApi, { Account } from "@ledgerhq/live-app-sdk";
 import { ActiveStepContext } from '../../Context/ActiveStepContext';
 import { AppDataContext, AppDataContextType } from '../../Context/AppDataContext';
@@ -24,11 +24,11 @@ type StringSetterCallBack = {
     (account: string): void
 }
 
-type BityFormCurrencyForm = {
+type BityForm = {
     appData: AppDataContextType;
 }
 
-const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
+const BityForm: React.FC<BityForm> = (props) => {
     function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
         props.appData.setConversionCurrency(
             CONVERSION_CURRENCIES
@@ -48,22 +48,6 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
             let valueSwtichList = [props.appData.outputAmount, props.appData.inputAmount];
             props.appData.setOutputAmount(valueSwtichList[1]);
             props.appData.setInputAmount(valueSwtichList[0]);
-            
-            let AmountValidator = new BityAmountValidator();
-
-            if (AmountValidator.validateField(props.appData.outputAmount)) {
-                setValidation(true, 'outputAmount');
-            } else {
-                setValidation(false, 'outputAmount');
-            }
-
-            if (AmountValidator.validateField(props.appData.inputAmount)) {
-                setValidation(true, 'inputAmount');
-            } else {
-                setValidation(false, 'inputAmount');
-            }
-
-            console.log(props.appData.validate);
         }
     }
 
@@ -142,4 +126,4 @@ const BityFormCurrencyForm: React.FC<BityFormCurrencyForm> = (props) => {
     )
 }
 
-export default BityFormCurrencyForm;
+export default BityForm;
